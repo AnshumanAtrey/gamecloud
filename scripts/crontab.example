@@ -1,0 +1,11 @@
+# GameCloud scheduled automation — install with:  crontab scripts/crontab.example
+# (paths assume the repo lives at /opt/gamecloud)
+
+# nightly MySQL backup at 02:30 UTC (rotation + optional S3 inside the script)
+30 2 * * *  /opt/gamecloud/scripts/backup-db.sh        >> /var/log/gamecloud/backup.log    2>&1
+
+# liveness probe every 5 minutes (self-heals the backend on failure)
+*/5 * * * *  /opt/gamecloud/scripts/healthcheck.sh     >> /var/log/gamecloud/health.log    2>&1
+
+# resource snapshot every minute (CPU / mem / disk)
+* * * * *    /opt/gamecloud/scripts/monitor-resources.sh >> /var/log/gamecloud/resources.log 2>&1

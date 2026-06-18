@@ -1,0 +1,115 @@
+Cloud Computing Advanced (30 Hours) - Viva
+
+Question Bank (100 Questions)
+
+Module 1: Advanced Linux for Cloud Servers
+1. What is the role of Linux in cloud computing?
+2. What is a Linux user account?
+3. What is a Linux group?
+4. What is the purpose of the useradd command?
+5. What is the purpose of the groupadd command?
+6. What is file ownership in Linux?
+7. What is the purpose of chmod?
+8. What is the purpose of chown?
+9. What are Linux file permissions?
+10. What is the difference between read, write, and execute permissions?
+11. What is process monitoring?
+12. What is the purpose of the top command?
+13. What is htop?
+14. What information does the ps command provide?
+15. What is the purpose of the kill command?
+16. What is package management?
+17. What is dnf used for?
+18. What are system logs?
+19. What is the /var/log directory?
+20. What is journalctl used for?
+Module 2: Cloud Architecture & Deployment Concepts
+21. What is cloud architecture?
+22. What are the main components of a cloud application?
+23. What is compute in cloud computing?
+24. What is cloud storage?
+25. What is cloud networking?
+26. What is a monolithic architecture?
+27. What is a distributed architecture?
+28. What is scalability?
+29. What is elasticity in cloud computing?
+30. What is high availability?
+31. What is load balancing?
+
+32. Why is load balancing important?
+33. What is a multi-region deployment?
+34. What are the benefits of multi-region deployments?
+35. How does distributed architecture improve reliability?
+Module 3: Web Server Deployment on Cloud VM
+36. What is a cloud virtual machine?
+37. How do you launch a cloud VM?
+38. What is SSH?
+39. Why is SSH used for secure access?
+40. What is Apache Web Server?
+41. What is Nginx?
+42. What is the purpose of a web server?
+43. What is a web server directory structure?
+44. What is SCP?
+45. How can Git be used to upload files to a server?
+46. What is systemctl?
+47. How do you start a service using systemctl?
+48. How do you stop a service using systemctl?
+49. How do you check service status using systemctl?
+50. How do you test a web server deployment?
+Module 4: Cloud Databases
+51. What is a cloud database?
+52. What is the difference between SQL and NoSQL databases?
+53. What is MySQL?
+54. What is MariaDB?
+55. How do you create a database?
+56. What is a database table?
+57. What is an SQL query?
+58. What is the INSERT operation?
+59. What is the SELECT operation?
+60. What is the UPDATE operation?
+61. What is the DELETE operation?
+62. How do applications connect to databases?
+Module 5: Containerization with Docker
+63. What is containerization?
+64. What is the difference between a virtual machine and a container?
+
+65. What is Docker?
+66. What are the components of Docker architecture?
+67. What is Docker Engine?
+68. What is a Docker image?
+69. What is a Docker container?
+70. What is Docker Hub?
+71. How do you pull an image from Docker Hub?
+72. What is a containerized application?
+73. How do you run a Docker container?
+74. How do you manage Docker containers?
+75. What is the container lifecycle?
+Module 6: Cloud Networking
+76. What is cloud networking?
+77. What is a Virtual Private Cloud (VPC)?
+78. What is a subnet?
+79. What is IP addressing?
+80. What is the difference between public and private network access?
+81. What is a security group?
+82. What is a firewall rule?
+83. Why are security groups important?
+84. What are secure SSH access practices?
+85. How do security groups control HTTP and SSH traffic?
+Module 7: Monitoring and Resource Management
+86. Why is monitoring important in cloud environments?
+87. How can CPU usage be monitored?
+88. How can memory usage be monitored?
+89. How can storage usage be monitored?
+90. What are disk usage monitoring tools?
+91. What is system performance monitoring?
+92. Why is log monitoring important?
+93. How do logs help in troubleshooting?
+Module 8: Cloud Automation Basics
+94. What is automation in cloud environments?
+95. What is Infrastructure as Code (IaC)?
+96. What is a Cloud Command Line Interface (CLI)?
+97. Why are CLIs used in cloud administration?
+
+98. What is a shell script?
+99. What are the benefits of shell scripting?
+100. How can server setup tasks be automated?

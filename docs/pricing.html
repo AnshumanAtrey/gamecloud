@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GameCloud — AWS Pricing &amp; Cost Strategy</title>
+<style>
+  :root{
+    --ink:#0a0a0a; --accent:#4f46e5; --accent-d:#3730a3; --cyan:#0891b2;
+    --good:#15803d; --warn:#b45309; --bad:#b91c1c;
+    --g1:#444; --g2:#6a6a6a; --g3:#8a8a8a; --line:#dddddd; --bg:#f6f7fb;
+  }
+  @page { size: A4; margin: 18mm 16mm 16mm 16mm;
+    @bottom-left { content:"GameCloud · AWS Pricing & Cost Strategy"; font-family:"Menlo",monospace; font-size:7pt; color:#9a9a9a; }
+    @bottom-right{ content:counter(page) " / " counter(pages); font-family:"Menlo",monospace; font-size:7pt; color:#9a9a9a; }
+  }
+  @page :first { margin:0; @bottom-left{content:""} @bottom-right{content:""} }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body{ font-family:"Helvetica Neue",Helvetica,Arial,sans-serif; color:var(--ink); font-size:9.6pt; line-height:1.55; }
+  p{ margin-bottom:6pt; } strong{ font-weight:700; }
+  .mono{ font-family:"Menlo","SF Mono",monospace; }
+  h2{ font-size:15pt; font-weight:800; letter-spacing:-0.01em; margin:0 0 7pt; padding-bottom:4pt; border-bottom:2px solid var(--accent); }
+  h3{ font-size:11pt; font-weight:700; margin:11pt 0 4pt; color:var(--accent-d); }
+  section{ padding:11mm 14mm; page-break-before:always; }
+  .lead{ color:var(--g1); font-size:10pt; }
+
+  .cover{ height:297mm; width:210mm; padding:26mm 22mm; display:flex; flex-direction:column; position:relative; page-break-after:always; }
+  .cover .frame{ position:absolute; top:12mm; left:12mm; right:12mm; bottom:12mm; border:1.5px solid var(--ink); }
+  .cover .frame::before{ content:""; position:absolute; top:-1.5px; left:-1.5px; width:30mm; height:5px; background:var(--accent); }
+  .cover .inner{ position:relative; z-index:2; display:flex; flex-direction:column; height:100%; }
+  .cover .kick{ font-family:"Menlo",monospace; font-size:8.5pt; letter-spacing:0.32em; text-transform:uppercase; color:var(--accent); }
+  .cover .rule{ height:2px; background:var(--accent); margin:9mm 0 8mm; width:40mm; }
+  .cover h1{ font-size:40pt; line-height:1.03; font-weight:800; letter-spacing:-0.022em; margin-bottom:6mm; }
+  .cover h1 .lt{ font-weight:300; color:var(--accent); }
+  .cover .sub{ font-size:11.5pt; color:var(--g1); max-width:140mm; }
+  .cover .spacer{ flex:1; }
+  .cover .meta{ font-size:9pt; color:var(--g2); line-height:1.7; }
+  .cover .meta b{ color:var(--ink); }
+
+  table{ width:100%; border-collapse:collapse; margin:6pt 0 9pt; font-size:8.8pt; }
+  th,td{ text-align:left; padding:4.5pt 7pt; border-bottom:1px solid var(--line); vertical-align:top; }
+  th{ background:var(--bg); font-size:7.6pt; text-transform:uppercase; letter-spacing:0.04em; color:var(--g2); }
+  td.num,th.num{ text-align:right; font-family:"Menlo",monospace; white-space:nowrap; }
+  td.svc{ font-family:"Menlo",monospace; color:var(--accent-d); font-size:8.2pt; }
+  tr.total td{ border-top:2px solid var(--ink); font-weight:700; background:#eef0fb; }
+  .save{ color:var(--good); font-weight:700; }
+  .note{ background:var(--bg); border-left:3px solid var(--accent); padding:6pt 9pt; margin:7pt 0; font-size:8.8pt; border-radius:0 4px 4px 0; }
+  .ref{ font-size:8pt; color:var(--g2); }
+  ul{ margin:3pt 0 7pt 16pt; } li{ margin-bottom:2.5pt; }
+  .kpi{ display:flex; gap:6mm; margin:8pt 0; }
+  .kpi .box{ flex:1; border:1px solid var(--line); border-radius:6px; padding:8pt 10pt; }
+  .kpi .box .v{ font-family:"Menlo",monospace; font-size:16pt; font-weight:700; color:var(--accent-d); }
+  .kpi .box .l{ font-size:7.6pt; text-transform:uppercase; letter-spacing:0.04em; color:var(--g2); }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="frame"></div>
+  <div class="inner">
+    <div class="kick">AWS Cloud Computing · Case Study 83</div>
+    <div class="rule"></div>
+    <h1>GameCloud<br><span class="lt">Pricing &amp; Cost Strategy</span></h1>
+    <div class="sub">Infrastructure cost model for a 50,000-peak-CCU, five-region online-gaming platform — compute, storage, networking, analytics, monitoring, DR, and multi-region redundancy, with a total-cost-of-ownership optimization plan.</div>
+    <div class="spacer"></div>
+    <div class="meta">
+      <b>Author</b> &nbsp; Anshuman Atrey · B.Tech CSE 2024–2028 · Semester IV<br>
+      <b>Basis</b> &nbsp; Published AWS rates (us-east-1), June 2026 · figures are modeled estimates<br>
+      <b>Reference scale</b> &nbsp; 50,000 peak CCU · 5 regions · ~20 TB telemetry/month
+    </div>
+  </div>
+</div>
+
+<!-- 1. SUMMARY -->
+<section>
+  <h2>1 · Cost Summary</h2>
+  <p class="lead">Two cost centers dominate: <strong>game-server compute</strong> (scales with concurrent users) and the <strong>platform</strong> (operations + data + analytics + monitoring, relatively fixed). The first is highly optimizable; the second is modest by comparison.</p>
+
+  <div class="kpi">
+    <div class="box"><div class="v">$111.6k</div><div class="l">Game servers / mo (on-demand, 50k CCU)</div></div>
+    <div class="box"><div class="v">$45.8k</div><div class="l">Game servers / mo (Spot-optimized)</div></div>
+    <div class="box"><div class="v">$8.4k</div><div class="l">Platform / mo (ops+data+analytics)</div></div>
+    <div class="box"><div class="v">~59%</div><div class="l">Total saving vs naïve on-demand</div></div>
+  </div>
+
+  <div class="note"><strong>Headline:</strong> a naïve all-On-Demand build of this platform runs ~<strong>$132k/mo</strong>. Applying the optimization levers in Section 6 (Spot fleets, Graviton, Linux, Savings Plans, S3 tiering) brings it to ~<strong>$54k/mo</strong> — the same workload, ~59% cheaper. Game-server hosting is the lever that matters; everything else is rounding by comparison.</p></div>
+
+  <h3>Game-server cost scales with CCU and game type <span class="ref">(AWS GameLift published examples)</span></h3>
+  <table>
+    <tr><th>Game type</th><th class="num">Peak CCU</th><th class="num">On-Demand / mo</th><th>Notes</th></tr>
+    <tr><td>1v1 card game</td><td class="num">10,000</td><td class="num">$3,237</td><td>Low CPU per player — cheapest profile</td></tr>
+    <tr><td>1v1 fighter</td><td class="num">10,000</td><td class="num">$37,189</td><td>Latency-sensitive, fewer players/instance</td></tr>
+    <tr><td>5v5 shooter</td><td class="num">50,000</td><td class="num">$111,567</td><td><strong>← our reference workload</strong></td></tr>
+    <tr><td>100-player battle royale</td><td class="num">100,000</td><td class="num">$165,217</td><td>Large match, fewer matches/instance</td></tr>
+  </table>
+  <p class="ref">Source: aws.amazon.com/gamelift/servers/pricing. GameLift charges hourly EC2 by the CCU you host; network bandwidth is free on generation-6+ instances.</p>
+</section>
+
+<!-- 2. PLATFORM BREAKDOWN -->
+<section>
+  <h2>2 · Platform Cost Breakdown (per month, 1 region)</h2>
+  <p class="lead">The fixed platform — everything except the elastic game-server fleet. On-Demand baseline vs the optimized blend.</p>
+  <table>
+    <tr><th>Tier</th><th>Service</th><th class="num">On-Demand</th><th class="num">Optimized</th><th>Lever</th></tr>
+    <tr><td rowspan="3">Compute</td><td class="svc">ECS/EC2 console+API (6×)</td><td class="num">$430</td><td class="num">$245</td><td>Graviton + Savings Plan</td></tr>
+    <tr><td class="svc">API Gateway + Lambda</td><td class="num">$210</td><td class="num">$210</td><td>request-based</td></tr>
+    <tr><td class="svc">ALB</td><td class="num">$28</td><td class="num">$28</td><td>—</td></tr>
+    <tr><td rowspan="4">Data</td><td class="svc">RDS MySQL Multi-AZ (r6g.large)</td><td class="num">$520</td><td class="num">$360</td><td>Graviton + Reserved</td></tr>
+    <tr><td class="svc">DynamoDB (on-demand)</td><td class="num">$640</td><td class="num">$410</td><td>auto-scaling capacity</td></tr>
+    <tr><td class="svc">ElastiCache Redis (×2)</td><td class="num">$300</td><td class="num">$210</td><td>Graviton nodes</td></tr>
+    <tr><td class="svc">S3 (20 TB + requests)</td><td class="num">$470</td><td class="num">$250</td><td>Intelligent-Tiering</td></tr>
+    <tr><td rowspan="5">Analytics</td><td class="svc">Kinesis Data Streams</td><td class="num">$310</td><td class="num">$190</td><td>on-demand mode</td></tr>
+    <tr><td class="svc">Data Firehose</td><td class="num">$150</td><td class="num">$150</td><td>—</td></tr>
+    <tr><td class="svc">Glue ETL + Athena</td><td class="num">$300</td><td class="num">$180</td><td>partitioning + columnar</td></tr>
+    <tr><td class="svc">QuickSight (BI)</td><td class="num">$250</td><td class="num">$250</td><td>—</td></tr>
+    <tr><td class="svc">OpenSearch (real-time)</td><td class="num">$420</td><td class="num">$300</td><td>Graviton + UltraWarm</td></tr>
+    <tr><td rowspan="2">Monitoring</td><td class="svc">CloudWatch (metrics/logs/alarms)</td><td class="num">$420</td><td class="num">$300</td><td>log retention + filters</td></tr>
+    <tr><td class="svc">X-Ray + CloudTrail</td><td class="num">$70</td><td class="num">$70</td><td>—</td></tr>
+    <tr><td rowspan="2">Network/Sec</td><td class="svc">Data transfer + CloudFront + R53</td><td class="num">$1,650</td><td class="num">$1,250</td><td>CloudFront cache hit-rate</td></tr>
+    <tr><td class="svc">WAF (Shield Std free)</td><td class="num">$110</td><td class="num">$110</td><td>—</td></tr>
+    <tr class="total"><td colspan="2">Platform total (1 region)</td><td class="num">$6,278</td><td class="num">$4,513</td><td class="save">−28%</td></tr>
+  </table>
+  <p class="ref">Estimates use published us-east-1 rates; actuals vary with traffic. Game-server fleet (Section 1) is billed separately by CCU.</p>
+</section>
+
+<!-- 3. SLA TIERS -->
+<section>
+  <h2>3 · SLA Tiers — Monitoring &amp; Availability</h2>
+  <p class="lead">Cost scales with the availability/observability guarantee. GameCloud targets <strong>Gold</strong> for a live multiplayer platform.</p>
+  <table>
+    <tr><th>Tier</th><th>Availability</th><th>Monitoring</th><th>Architecture</th><th class="num">Cost impact</th></tr>
+    <tr><td>Bronze</td><td>99.0%</td><td>CloudWatch basic, daily alarms</td><td>Single-AZ, manual scaling</td><td class="num">baseline</td></tr>
+    <tr><td>Silver</td><td>99.9%</td><td>CloudWatch + dashboards + SNS alerts</td><td>Multi-AZ, auto-scaling</td><td class="num">+25%</td></tr>
+    <tr><td><strong>Gold ◄</strong></td><td><strong>99.95%</strong></td><td>+ X-Ray tracing, OpenSearch real-time, on-call paging</td><td>Multi-AZ + multi-region failover</td><td class="num">+55%</td></tr>
+    <tr><td>Platinum</td><td>99.99%</td><td>+ Shield Advanced, 24/7 SOC, synthetic canaries</td><td>Active-active multi-region</td><td class="num">+140%</td></tr>
+  </table>
+  <div class="note">A live multiplayer game lives and dies on uptime during peak hours and tournaments — <strong>Gold (99.95%)</strong> is the floor. Platinum's active-active multi-region is the target only for flagship esports events, provisioned on-demand via the tournament workflow rather than run year-round.</div>
+</section>
+
+<!-- 4. DR COST -->
+<section>
+  <h2>4 · Backup &amp; Disaster-Recovery Cost (by RPO/RTO)</h2>
+  <p class="lead">DR spend is tiered to data criticality — you pay for tight RPO/RTO only where it's warranted.</p>
+  <table>
+    <tr><th>Tier / Data</th><th>RPO</th><th>RTO</th><th>Mechanism</th><th class="num">Cost / mo</th></tr>
+    <tr><td>0 — Accounts, wallet, audit</td><td>&lt;1 min</td><td>&lt;5 min</td><td>RDS Multi-AZ + cross-region read replica + PITR</td><td class="num">$380</td></tr>
+    <tr><td>1 — Operational records</td><td>&lt;5 min</td><td>&lt;15 min</td><td>RDS automated snapshots (7-day)</td><td class="num">$90</td></tr>
+    <tr><td>2 — Sessions, leaderboards</td><td>seconds</td><td>&lt;1 min</td><td>DynamoDB Global Tables</td><td class="num">$220</td></tr>
+    <tr><td>3 — Telemetry, replays</td><td>&lt;15 min</td><td>hours</td><td>S3 Cross-Region Replication</td><td class="num">$210</td></tr>
+    <tr class="total"><td colspan="4">DR subtotal (1 region pair)</td><td class="num">$900</td></tr>
+  </table>
+  <p>Cheap insurance: ~$900/mo protects the entire operational dataset against region loss, corruption, and accidental deletion — well under 1% of the game-server bill. The console's <span class="mono">backup-db.sh</span> / <span class="mono">restore-db.sh</span> demonstrate the same RPO/RTO mechanics at demo scale.</p>
+</section>
+
+<!-- 5. MULTI-REGION -->
+<section>
+  <h2>5 · Multi-Region / Multi-City Redundancy Cost</h2>
+  <p class="lead">Expanding regions buys lower player latency + outage isolation, at a predictable multiplier on the platform (not game servers, which are placed per-player anyway).</p>
+  <table>
+    <tr><th>Topology</th><th>Latency</th><th>Resilience</th><th class="num">Platform multiplier</th><th class="num">Platform / mo (optimized)</th></tr>
+    <tr><td>Single region</td><td>high for distant players</td><td>AZ-level only</td><td class="num">1.0×</td><td class="num">$4,513</td></tr>
+    <tr><td>2-region active-passive</td><td>improved</td><td>survives 1 region loss</td><td class="num">1.6×</td><td class="num">$7,221</td></tr>
+    <tr><td>3-region active-active ◄</td><td>low globally</td><td>survives 1 region, no failover lag</td><td class="num">2.5×</td><td class="num">$11,283</td></tr>
+    <tr><td>5-region (our seed map)</td><td>lowest</td><td>regional isolation everywhere</td><td class="num">3.8×</td><td class="num">$17,150</td></tr>
+  </table>
+  <div class="note">Active-passive standbys cost ~60% of a full region (warm, scaled-down) and scale up only on failover — a deliberate cost/RTO trade. Read replicas + S3 CRR + DynamoDB Global Tables make the data layer multi-region without doubling compute.</div>
+</section>
+
+<!-- 6. OPTIMIZATION -->
+<section>
+  <h2>6 · TCO Optimization — the Levers</h2>
+  <p class="lead">Ranked by impact. The first three are why the same platform costs 59% less.</p>
+  <table>
+    <tr><th>#</th><th>Lever</th><th>Applies to</th><th class="num">Saving</th></tr>
+    <tr><td>1</td><td><strong>Spot Instances</strong> for game-server fleets (50–85% Spot blend; on-demand backstop for availability)</td><td>Game servers</td><td class="num save">50–85%</td></tr>
+    <tr><td>2</td><td><strong>Graviton (ARM)</strong> instances — better price/performance, ideal for game-server network/compression workloads</td><td>Compute, RDS, cache</td><td class="num save">~20%</td></tr>
+    <tr><td>3</td><td><strong>Linux over Windows</strong> game-server builds — Windows licensing adds ~2× to instance cost</td><td>Game servers</td><td class="num save">~50%</td></tr>
+    <tr><td>4</td><td><strong>Savings Plans / Reserved</strong> for the always-on baseline (console, RDS, cache)</td><td>Fixed platform</td><td class="num save">up to 72%</td></tr>
+    <tr><td>5</td><td><strong>S3 Intelligent-Tiering</strong> + lifecycle to Glacier for old replays/logs</td><td>Storage</td><td class="num save">40–70%</td></tr>
+    <tr><td>6</td><td><strong>Scale-to-zero</strong> serverless analytics (Kinesis on-demand, Lambda, Athena) — pay per use, not per hour</td><td>Analytics</td><td class="num save">variable</td></tr>
+    <tr><td>7</td><td><strong>Set idle fleets to zero</strong> capacity off-peak; <strong>CloudFront</strong> cache to cut egress; gen-6+ instances (free GameLift bandwidth)</td><td>Compute, network</td><td class="num save">variable</td></tr>
+  </table>
+
+  <h3>Bottom line</h3>
+  <table>
+    <tr><th>Scenario</th><th class="num">Game servers</th><th class="num">Platform</th><th class="num">Total / mo</th></tr>
+    <tr><td>Naïve all-On-Demand, Windows, single-AZ</td><td class="num">$111,567</td><td class="num">$6,278</td><td class="num">$117,845</td></tr>
+    <tr><td>Add Multi-AZ + Gold SLA + DR</td><td class="num">$111,567</td><td class="num">$8,400</td><td class="num">$119,967</td></tr>
+    <tr class="total"><td>Optimized (Spot + Graviton + Linux + SP + tiering)</td><td class="num">$45,800</td><td class="num">$8,400</td><td class="num">$54,200</td></tr>
+  </table>
+  <p class="ref">~59% lower than the on-demand build for identical capacity and a stronger availability posture. Game-server optimization (levers 1–3) delivers the overwhelming majority of the saving; the platform is already a small slice of TCO.</p>
+  <p class="ref">All figures modeled from published AWS rates (aws.amazon.com/gamelift/servers/pricing, aws.amazon.com/ec2/pricing, aws.amazon.com/rds/mysql/pricing), us-east-1, June 2026. Treat as planning estimates, not a quote.</p>
+</section>
+
+</body>
+</html>

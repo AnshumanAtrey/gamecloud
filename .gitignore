@@ -1,0 +1,23 @@
+# python
+backend/.venv/
+__pycache__/
+*.pyc
+*.db
+
+# node / next
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# env / secrets / terraform state (never publish — contains infra details)
+.env
+*.env.local
+*.tfstate
+*.tfstate.*
+.terraform/
+tfplan
+*.tfplan
+*.pem
+
+# os
+.DS_Store

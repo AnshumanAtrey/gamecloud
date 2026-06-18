@@ -1,0 +1,51 @@
+# GameCloud — full local stack: MySQL 8 + FastAPI backend + Next.js console.
+#   docker compose up --build
+#   console  → http://localhost:3100   (admin / manager / ops · gamecloud123)
+#   api      → http://localhost:8000   (/docs, /metrics, /health)
+#   mysql    → localhost:3306          (gamecloud / gamecloud_pw)
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: gamecloud-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpw
+      MYSQL_DATABASE: gamecloud
+      MYSQL_USER: gamecloud
+      MYSQL_PASSWORD: gamecloud_pw
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-prootpw"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  backend:
+    build: ./backend
+    container_name: gamecloud-backend
+    environment:
+      DATABASE_URL: mysql+pymysql://gamecloud:gamecloud_pw@mysql:3306/gamecloud
+      JWT_SECRET: change-me-in-prod
+      CORS_ORIGINS: "*"
+    ports:
+      - "8000:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # browser-reachable backend URL (host port), inlined at build time
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    container_name: gamecloud-frontend
+    ports:
+      - "3100:3000"
+    depends_on:
+      - backend
+
+volumes:
+  mysql-data:

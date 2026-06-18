@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GameCloud — AWS Cloud Architecture</title>
+<style>
+  :root{
+    --ink:#0a0a0a; --accent:#4f46e5; --accent-d:#3730a3; --cyan:#0891b2;
+    --good:#15803d; --warn:#b45309; --bad:#b91c1c;
+    --g1:#444; --g2:#6a6a6a; --g3:#8a8a8a; --line:#dddddd; --bg:#f6f7fb;
+  }
+  @page { size: A4; margin: 18mm 16mm 16mm 16mm;
+    @bottom-left { content:"GameCloud · AWS Cloud Architecture"; font-family:"Menlo",monospace; font-size:7pt; color:#9a9a9a; }
+    @bottom-right{ content:counter(page) " / " counter(pages); font-family:"Menlo",monospace; font-size:7pt; color:#9a9a9a; }
+  }
+  @page :first { margin:0; @bottom-left{content:""} @bottom-right{content:""} }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body{ font-family:"Helvetica Neue",Helvetica,Arial,sans-serif; color:var(--ink); font-size:9.6pt; line-height:1.55; background:#fff; }
+  p{ margin-bottom:6pt; } strong{ font-weight:700; } em{ font-style:italic; }
+  .mono{ font-family:"Menlo","SF Mono",monospace; }
+  h2{ font-size:15pt; font-weight:800; letter-spacing:-0.01em; margin:0 0 7pt; padding-bottom:4pt; border-bottom:2px solid var(--accent); }
+  h3{ font-size:11pt; font-weight:700; margin:11pt 0 4pt; color:var(--accent-d); }
+  section{ padding:11mm 14mm; page-break-before:always; }
+  .lead{ color:var(--g1); font-size:10pt; }
+
+  /* cover */
+  .cover{ height:297mm; width:210mm; padding:26mm 22mm; display:flex; flex-direction:column; position:relative; page-break-after:always; }
+  .cover .frame{ position:absolute; top:12mm; left:12mm; right:12mm; bottom:12mm; border:1.5px solid var(--ink); }
+  .cover .frame::before{ content:""; position:absolute; top:-1.5px; left:-1.5px; width:30mm; height:5px; background:var(--accent); }
+  .cover .inner{ position:relative; z-index:2; display:flex; flex-direction:column; height:100%; }
+  .cover .kick{ font-family:"Menlo",monospace; font-size:8.5pt; letter-spacing:0.32em; text-transform:uppercase; color:var(--accent); }
+  .cover .rule{ height:2px; background:var(--accent); margin:9mm 0 8mm; width:40mm; }
+  .cover h1{ font-size:40pt; line-height:1.03; font-weight:800; letter-spacing:-0.022em; margin-bottom:6mm; }
+  .cover h1 .lt{ font-weight:300; color:var(--accent); }
+  .cover .sub{ font-size:11.5pt; color:var(--g1); max-width:140mm; }
+  .cover .spacer{ flex:1; }
+  .cover .meta{ font-size:9pt; color:var(--g2); line-height:1.7; }
+  .cover .meta b{ color:var(--ink); }
+
+  table{ width:100%; border-collapse:collapse; margin:6pt 0 9pt; font-size:8.8pt; }
+  th,td{ text-align:left; padding:4.5pt 7pt; border-bottom:1px solid var(--line); vertical-align:top; }
+  th{ background:var(--bg); font-size:7.6pt; text-transform:uppercase; letter-spacing:0.04em; color:var(--g2); }
+  td.svc{ font-family:"Menlo",monospace; color:var(--accent-d); font-size:8.2pt; white-space:nowrap; }
+
+  /* layered architecture diagram */
+  .arch{ border:1px solid var(--line); border-radius:6px; overflow:hidden; margin:8pt 0; }
+  .band{ display:flex; align-items:center; border-bottom:1px solid var(--line); }
+  .band:last-child{ border-bottom:0; }
+  .band .tier{ width:34mm; flex-shrink:0; padding:6pt 8pt; font-size:7.6pt; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; color:#fff; }
+  .band .chips{ display:flex; flex-wrap:wrap; gap:4pt; padding:6pt 8pt; }
+  .chip{ font-family:"Menlo",monospace; font-size:7.6pt; padding:2pt 6pt; border-radius:4px; background:var(--bg); border:1px solid var(--line); color:var(--ink); }
+  .t-edge{ background:#1e293b;} .t-id{ background:#4f46e5;} .t-net{ background:#0891b2;}
+  .t-cmp{ background:#7c3aed;} .t-data{ background:#15803d;} .t-an{ background:#b45309;}
+  .t-mon{ background:#0ea5e9;} .t-dr{ background:#b91c1c;} .t-iac{ background:#475569;}
+
+  .flow{ counter-reset:step; margin:6pt 0; }
+  .flow .s{ position:relative; padding:3pt 0 3pt 20pt; font-size:9pt; border-left:2px solid var(--line); margin-left:6pt; }
+  .flow .s::before{ counter-increment:step; content:counter(step); position:absolute; left:-9pt; top:2pt; width:15pt; height:15pt; background:var(--accent); color:#fff; border-radius:50%; font-size:7.5pt; font-weight:700; display:flex; align-items:center; justify-content:center; }
+
+  .cols{ display:flex; gap:9mm; } .cols > div{ flex:1; }
+  .note{ background:var(--bg); border-left:3px solid var(--accent); padding:6pt 9pt; margin:7pt 0; font-size:8.8pt; border-radius:0 4px 4px 0; }
+  .tag{ display:inline-block; font-family:"Menlo",monospace; font-size:7pt; padding:1pt 5pt; border-radius:3px; color:#fff; }
+  .live{ background:var(--good);} .design{ background:var(--warn);}
+  ul{ margin:3pt 0 7pt 16pt; } li{ margin-bottom:2.5pt; }
+  .ref{ font-size:8pt; color:var(--g2); }
+  a{ color:var(--accent-d); text-decoration:none; }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="frame"></div>
+  <div class="inner">
+    <div class="kick">AWS Cloud Computing · Case Study 83</div>
+    <div class="rule"></div>
+    <h1>GameCloud<br><span class="lt">Cloud Architecture</span></h1>
+    <div class="sub">A scalable, highly-available, multi-region AWS platform for an online gaming &amp; esports operations company — game-server hosting, real-time analytics, and a centralized operations console.</div>
+    <div class="spacer"></div>
+    <div class="meta">
+      <b>Author</b> &nbsp; Anshuman Atrey &nbsp;·&nbsp; B.Tech CSE 2024–2028 · Semester IV<br>
+      <b>Institution</b> &nbsp; ITM Skills University &nbsp;·&nbsp; <b>Domain</b> &nbsp; Online Gaming &amp; Esports Infrastructure<br>
+      <b>Deliverable</b> &nbsp; Cloud Architecture · HA · Scalability · Elasticity · Multi-Region · DR
+    </div>
+  </div>
+</div>
+
+<!-- 1. OVERVIEW -->
+<section>
+  <h2>1 · Executive Summary</h2>
+  <p class="lead">GameCloud is the cloud platform an online-gaming/esports company runs its global business on. It has three planes: a <strong>game-serving plane</strong> (low-latency multiplayer hosting), an <strong>analytics plane</strong> (petabyte-scale telemetry → insight), and an <strong>operations plane</strong> (the console that gives staff centralized visibility, RBAC, reporting, approval workflows, alerting, and audit).</p>
+  <p>The architecture is a direct application of three AWS reference designs — the <em>Guidance for Multiplayer Session-Based Game Hosting</em>, the open-source <em>Game Analytics Pipeline</em>, and the <em>Well-Architected Games Industry Lens</em> — tailored to this company's operational requirements: scalability, high availability, elasticity, centralized visibility, disaster-recovery readiness, and secure role-based access across all regions.</p>
+
+  <h3>Design objectives → architectural response</h3>
+  <table>
+    <tr><th>Requirement</th><th>Architectural response</th></tr>
+    <tr><td>Scalability &amp; elasticity</td><td>GameLift fleets with FlexMatch + Spot/On-Demand auto-scaling; ECS/EC2 Auto Scaling for the console; serverless analytics that scales to zero.</td></tr>
+    <tr><td>High availability</td><td>Multi-AZ deployment of every tier; ALB health checks; RDS Multi-AZ; stateless app tier behind Auto Scaling.</td></tr>
+    <tr><td>Multi-region</td><td>GameLift multi-region fleets + queues placed on player latency; Route 53 latency routing; cross-region data replication.</td></tr>
+    <tr><td>Centralized visibility</td><td>The operations console + CloudWatch dashboards + QuickSight executive BI.</td></tr>
+    <tr><td>Secure access</td><td>Cognito identity → JWT with group→role claims (Admin/Manager/Ops); IAM least-privilege; WAF + Shield; KMS encryption.</td></tr>
+    <tr><td>DR readiness</td><td>RPO/RTO-tiered backups, Multi-AZ failover, cross-region replication, Route 53 failover routing (Section 7).</td></tr>
+  </table>
+</section>
+
+<!-- 2. ARCHITECTURE -->
+<section>
+  <h2>2 · Reference Architecture</h2>
+  <p class="lead">Nine tiers from the player's edge down to infrastructure-as-code. Each rubric requirement maps to a named AWS service.</p>
+
+  <div class="arch">
+    <div class="band"><div class="tier t-edge">Edge / Security</div><div class="chips"><span class="chip">Route 53</span><span class="chip">CloudFront</span><span class="chip">AWS WAF</span><span class="chip">AWS Shield (DDoS)</span><span class="chip">Global Accelerator</span></div></div>
+    <div class="band"><div class="tier t-id">Identity / RBAC</div><div class="chips"><span class="chip">Amazon Cognito</span><span class="chip">IAM</span><span class="chip">Secrets Manager</span><span class="chip">KMS</span></div></div>
+    <div class="band"><div class="tier t-net">Network (VPC)</div><div class="chips"><span class="chip">VPC</span><span class="chip">public + private subnets ×2 AZ</span><span class="chip">ALB</span><span class="chip">NAT / IGW</span><span class="chip">Security Groups + NACL</span></div></div>
+    <div class="band"><div class="tier t-cmp">Compute</div><div class="chips"><span class="chip">Amazon GameLift (FlexMatch)</span><span class="chip">ECS Fargate / EC2 ASG</span><span class="chip">API Gateway + Lambda</span></div></div>
+    <div class="band"><div class="tier t-data">Data</div><div class="chips"><span class="chip">RDS MySQL Multi-AZ</span><span class="chip">DynamoDB</span><span class="chip">ElastiCache (Redis)</span><span class="chip">S3</span></div></div>
+    <div class="band"><div class="tier t-an">Analytics</div><div class="chips"><span class="chip">Kinesis</span><span class="chip">Data Firehose</span><span class="chip">Glue</span><span class="chip">Athena</span><span class="chip">QuickSight</span><span class="chip">OpenSearch</span></div></div>
+    <div class="band"><div class="tier t-mon">Monitoring</div><div class="chips"><span class="chip">CloudWatch (metrics/logs/alarms)</span><span class="chip">SNS</span><span class="chip">X-Ray</span><span class="chip">Systems Manager</span></div></div>
+    <div class="band"><div class="tier t-dr">DR / Resilience</div><div class="chips"><span class="chip">RDS Multi-AZ</span><span class="chip">S3 CRR</span><span class="chip">DynamoDB Global Tables</span><span class="chip">Route 53 failover</span></div></div>
+    <div class="band"><div class="tier t-iac">Automation / IaC</div><div class="chips"><span class="chip">Terraform / CloudFormation</span><span class="chip">CodePipeline</span><span class="chip">shell automation</span></div></div>
+  </div>
+
+  <div class="note"><strong>What is live vs designed.</strong> <span class="tag live">LIVE</span> The operations console, MySQL data tier, VPC + security groups, CloudWatch-equivalent metrics, and cron automation run on a real free-tier EC2 host. <span class="tag design">DESIGN</span> The GameLift fleets, serverless analytics pipeline, RDS Multi-AZ, and multi-region edge are documented + costed as the production target the live host scales into.</p></div>
+
+  <h3>Tier responsibilities (rubric → service)</h3>
+  <table>
+    <tr><th>Rubric item</th><th>Service(s)</th><th>Role</th></tr>
+    <tr><td>Compute / elasticity</td><td class="svc">GameLift, ECS, ASG</td><td>Session-based game servers auto-scale on CCU; console scales on request load.</td></tr>
+    <tr><td>Storage</td><td class="svc">S3, EBS, EFS</td><td>Game assets, replays, logs, analytics data lake, backups.</td></tr>
+    <tr><td>Networking / VPC</td><td class="svc">VPC, ALB, SG</td><td>Public web tier, private data tier, firewall isolation across 2 AZs.</td></tr>
+    <tr><td>Databases</td><td class="svc">RDS MySQL, DynamoDB</td><td>Operational records + audit in MySQL; sessions/leaderboards in DynamoDB.</td></tr>
+    <tr><td>Containerization</td><td class="svc">ECS, Docker</td><td>Console + API shipped as images; GameLift runs containerized builds.</td></tr>
+    <tr><td>Monitoring</td><td class="svc">CloudWatch</td><td>Metrics, log aggregation, alarms → SNS; near-real-time game-server logs.</td></tr>
+  </table>
+</section>
+
+<!-- 3. DATA FLOWS -->
+<section>
+  <h2>3 · Data Flows</h2>
+
+  <h3>3.1 Game session lifecycle <span class="ref">(per AWS Multiplayer Session-Based Game Hosting)</span></h3>
+  <div class="flow">
+    <div class="s">Client requests an <strong>Amazon Cognito</strong> identity + temporary AWS credentials.</div>
+    <div class="s">Client signs a matchmaking request to <strong>API Gateway</strong> with its per-region latency data.</div>
+    <div class="s">API Gateway invokes a <strong>Lambda</strong> that reads the player's skill from <strong>DynamoDB</strong>.</div>
+    <div class="s">Lambda asks <strong>GameLift FlexMatch</strong> to make a match on skill + latency.</div>
+    <div class="s">A <strong>GameLift queue</strong> places the session in the lowest-latency <strong>fleet location</strong>.</div>
+    <div class="s">On match success FlexMatch publishes to <strong>SNS</strong>; a Lambda writes the ticket to DynamoDB.</div>
+    <div class="s">Client polls API Gateway, receives server IP/port + player-session ID, connects directly.</div>
+    <div class="s">Game servers stream logs + metrics to <strong>CloudWatch</strong> via the CloudWatch agent.</div>
+  </div>
+
+  <h3>3.2 Analytics pipeline <span class="ref">(per AWS Game Analytics Pipeline, MIT-0)</span></h3>
+  <div class="flow">
+    <div class="s">Clients/servers emit telemetry to an <strong>API Gateway</strong> ingest endpoint (Lambda-authorized).</div>
+    <div class="s">Events land in <strong>Kinesis Data Streams</strong> — the branch point for real-time vs batch.</div>
+    <div class="s"><em>Batch:</em> <strong>Data Firehose</strong> → <strong>S3</strong> (Iceberg/Hive) → <strong>Glue</strong> ETL → query with <strong>Athena</strong> → visualize in <strong>QuickSight</strong> (the executive portal's BI source).</div>
+    <div class="s"><em>Real-time:</em> <strong>Managed Apache Flink</strong> consumes the stream → <strong>OpenSearch</strong> dashboards + custom CloudWatch metrics for live LiveOps.</div>
+    <div class="s">Aggregated KPIs (CCU, revenue, match analytics) surface in the operations console.</div>
+  </div>
+  <div class="note">The operations console we built mirrors this: live KPIs are computed and snapshotted to MySQL every 15&nbsp;s for durable history — the same "stream → store → visualize" pattern at demo scale. Open-source prior art for the embedded ops/RBAC console: <span class="mono">Heroic Labs Nakama Console</span>.</div>
+</section>
+
+<!-- 4. MULTI-REGION & HA -->
+<section>
+  <h2>4 · Multi-Region, High Availability &amp; Elasticity</h2>
+  <div class="cols">
+    <div>
+      <h3>Multi-region</h3>
+      <ul>
+        <li><strong>GameLift multi-region fleets + queues</strong> place each session in the location with the lowest measured player latency.</li>
+        <li><strong>Route 53</strong> latency-based routing sends console/API traffic to the nearest healthy region.</li>
+        <li><strong>Edge:</strong> CloudFront caches static assets; Global Accelerator gives anycast game ingress.</li>
+        <li>Five seeded regions: us-east-1, eu-west-1, ap-south-1, ap-southeast-1, sa-east-1 — expansion is a console workflow (region_expansion approval).</li>
+      </ul>
+      <h3>Elasticity</h3>
+      <ul>
+        <li>Game fleets scale on <strong>CCU</strong>; Spot + On-Demand blend (50–85% Spot) for cost-efficient bursts.</li>
+        <li>Console tier on <strong>ECS Fargate / EC2 ASG</strong> with target-tracking on CPU + request count.</li>
+        <li>Analytics is serverless — Kinesis on-demand, Lambda, Athena — scales to demand and to zero.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>High availability</h3>
+      <ul>
+        <li>Every tier spans <strong>≥ 2 Availability Zones</strong>.</li>
+        <li><strong>ALB</strong> health-checks the app tier and sheds unhealthy targets.</li>
+        <li><strong>RDS Multi-AZ</strong> keeps a synchronous standby with automatic failover.</li>
+        <li><strong>DynamoDB</strong> + <strong>S3</strong> are inherently multi-AZ, 11-nines durability on S3.</li>
+        <li>Stateless app tier → any instance can serve any request; sessions in <strong>ElastiCache</strong>.</li>
+      </ul>
+      <div class="note"><strong>Live demo of resilience:</strong> the console's DR drill (admin → Regions) takes a region <em>degraded</em> or <em>offline</em>; the platform keeps serving healthy regions and the dashboards reflect the outage — answering the brief's "reviewers may simulate cloud-region outages."</div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. SECURITY -->
+<section>
+  <h2>5 · Security &amp; Access Control</h2>
+  <div class="cols">
+    <div>
+      <h3>Identity &amp; RBAC</h3>
+      <ul>
+        <li><strong>Amazon Cognito</strong> user pools authenticate players and staff; group membership maps to a role claim in the JWT.</li>
+        <li>Three operational roles — <strong>Admin</strong> (full + DR drills + user mgmt), <strong>Manager</strong> (approve workflows + analytics + exec portal), <strong>Ops</strong> (monitor + ack alerts + <em>request</em>, not approve).</li>
+        <li>The console enforces this on every privileged route; the API re-checks server-side (defense in depth).</li>
+      </ul>
+      <h3>Network security</h3>
+      <ul>
+        <li>Private subnets for data; only the ALB + bastion are public.</li>
+        <li>Security groups are least-privilege (DB SG only accepts 3306 from the web SG).</li>
+        <li><strong>WAF</strong> filters L7 attacks; <strong>Shield</strong> absorbs DDoS — table stakes for a public game.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Data protection</h3>
+      <ul>
+        <li><strong>KMS</strong> encryption at rest (RDS, S3, EBS, DynamoDB).</li>
+        <li>TLS in transit everywhere (ACM-managed certs on CloudFront + ALB).</li>
+        <li><strong>Secrets Manager</strong> holds DB credentials + API keys (no secrets in code/images).</li>
+        <li>The append-only <strong>audit log</strong> (every privileged action → MySQL) gives compliance traceability.</li>
+      </ul>
+      <h3>Operational security</h3>
+      <ul>
+        <li><strong>Systems Manager Session Manager</strong> for keyless, audited shell access.</li>
+        <li>IAM roles on instances — no long-lived keys on hosts.</li>
+        <li>CloudTrail records every API call for forensic review.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 6. DEPLOYMENT -->
+<section>
+  <h2>6 · Deployment View</h2>
+  <p class="lead">How the logical architecture maps to running infrastructure — and exactly what is demonstrated live for this evaluation.</p>
+  <table>
+    <tr><th>Component</th><th>Production target</th><th>This evaluation</th></tr>
+    <tr><td>Operations console</td><td class="svc">ECS Fargate behind ALB, ×2 AZ</td><td><span class="tag live">LIVE</span> Next.js on EC2 / Vercel</td></tr>
+    <tr><td>Operations API</td><td class="svc">ECS Fargate, ASG</td><td><span class="tag live">LIVE</span> FastAPI on EC2 (Docker)</td></tr>
+    <tr><td>Operational database</td><td class="svc">RDS MySQL Multi-AZ</td><td><span class="tag live">LIVE</span> MySQL 8 on EC2 / container</td></tr>
+    <tr><td>Network</td><td class="svc">VPC, 2 public + 2 private subnets</td><td><span class="tag live">LIVE</span> VPC + SG via Terraform</td></tr>
+    <tr><td>Monitoring</td><td class="svc">CloudWatch dashboards + alarms</td><td><span class="tag live">LIVE</span> Prometheus /metrics + CW agent</td></tr>
+    <tr><td>Backups</td><td class="svc">RDS automated + S3 CRR</td><td><span class="tag live">LIVE</span> cron mysqldump → /backups (+ S3)</td></tr>
+    <tr><td>Game servers</td><td class="svc">GameLift multi-region fleets</td><td><span class="tag design">DESIGN</span> documented + costed</td></tr>
+    <tr><td>Analytics</td><td class="svc">Kinesis → S3 → Athena → QuickSight</td><td><span class="tag design">DESIGN</span> + live KPI mirror in console</td></tr>
+  </table>
+  <p>Infrastructure is reproducible: <span class="mono">infra/terraform/</span> provisions the VPC, subnets, security groups, EC2, and (optional) RDS; <span class="mono">scripts/</span> automate Linux setup, backups, health checks, and resource monitoring; <span class="mono">docker-compose.yml</span> brings up the whole stack with one command.</p>
+</section>
+
+<!-- 7. DR -->
+<section>
+  <h2>7 · Disaster Recovery &amp; Resilience</h2>
+  <p class="lead">Tiered by data criticality. RPO = max acceptable data loss; RTO = max acceptable downtime.</p>
+  <table>
+    <tr><th>Tier</th><th>Data</th><th>Strategy</th><th>RPO</th><th>RTO</th></tr>
+    <tr><td>0 — Critical</td><td>Player accounts, wallet, audit</td><td>RDS Multi-AZ + cross-region read replica; PITR</td><td>&lt; 1 min</td><td>&lt; 5 min</td></tr>
+    <tr><td>1 — Operational</td><td>Fleets, workflows, alerts</td><td>RDS Multi-AZ + automated daily snapshots</td><td>&lt; 5 min</td><td>&lt; 15 min</td></tr>
+    <tr><td>2 — Session</td><td>Live matches, leaderboards</td><td>DynamoDB Global Tables; ElastiCache (rebuildable)</td><td>seconds</td><td>&lt; 1 min</td></tr>
+    <tr><td>3 — Analytical</td><td>Telemetry, replays, logs</td><td>S3 Cross-Region Replication (11-nines durability)</td><td>&lt; 15 min</td><td>hours</td></tr>
+  </table>
+  <h3>Failure scenarios &amp; response</h3>
+  <table>
+    <tr><th>Scenario (brief)</th><th>Automated response</th></tr>
+    <tr><td>Cloud-region outage</td><td>Route 53 health check fails → traffic shifts to a healthy region; GameLift queue places new sessions elsewhere. <em>(Demonstrated live in the console DR drill.)</em></td></tr>
+    <tr><td>Analytics pipeline failure</td><td>Kinesis buffers; Firehose retries to S3; the console degrades gracefully to its KPI fallback and keeps serving.</td></tr>
+    <tr><td>Storage corruption</td><td>Restore from RDS PITR / latest snapshot via <span class="mono">restore-db.sh</span>; S3 versioning recovers objects.</td></tr>
+    <tr><td>Cyberattack / DDoS</td><td>Shield + WAF absorb/throttle; Auto Scaling absorbs load spikes; Secrets rotation on compromise.</td></tr>
+    <tr><td>Traffic surge (tournament)</td><td>GameLift + ASG scale out on CCU; reserved burst capacity provisioned via the tournament approval workflow.</td></tr>
+  </table>
+</section>
+
+<!-- 8. WELL-ARCHITECTED -->
+<section>
+  <h2>8 · Well-Architected — Games Industry Lens</h2>
+  <p class="lead">Mapping GameCloud to the six pillars of the AWS Well-Architected Framework, Games Industry Lens (Dec 2025).</p>
+  <table>
+    <tr><th>Pillar</th><th>How GameCloud applies it</th></tr>
+    <tr><td>Operational Excellence</td><td>IaC (Terraform), one-command deploy, automated backups + health checks, the ops console itself as the LiveOps control plane, full audit trail.</td></tr>
+    <tr><td>Security</td><td>Cognito + IAM least-privilege, role-based access, WAF + Shield, KMS at rest, TLS in transit, Secrets Manager, CloudTrail.</td></tr>
+    <tr><td>Reliability</td><td>Multi-AZ everything, RDS failover, DynamoDB Global Tables, Route 53 health-checked failover, graceful degradation, RPO/RTO tiers.</td></tr>
+    <tr><td>Performance Efficiency</td><td>Latency-based GameLift placement, ElastiCache for hot reads, CloudFront edge, Graviton (ARM) instances, serverless analytics.</td></tr>
+    <tr><td>Cost Optimization</td><td>Spot fleets (50–85% off), Graviton (~20% better price/perf), Linux servers, S3 lifecycle tiering, scale-to-zero analytics (see pricing doc).</td></tr>
+    <tr><td>Sustainability</td><td>Graviton energy efficiency, Spot reuse of spare capacity, auto-scaling to actual demand, serverless idle-to-zero.</td></tr>
+  </table>
+
+  <h3>References</h3>
+  <p class="ref">
+    AWS — Guidance for Multiplayer Session-Based Game Hosting · <span class="mono">aws.amazon.com/solutions/guidance/multiplayer-session-based-game-hosting-on-aws</span><br>
+    AWS — Game Analytics Pipeline (MIT-0) · <span class="mono">github.com/aws-solutions-library-samples/guidance-for-game-analytics-pipeline-on-aws</span><br>
+    AWS — Well-Architected Games Industry Lens · <span class="mono">docs.aws.amazon.com/wellarchitected/latest/games-industry-lens</span><br>
+    Amazon GameLift pricing &amp; cost optimization · <span class="mono">aws.amazon.com/gamelift/servers/pricing</span><br>
+    Heroic Labs Nakama (open-source game backend + console) · <span class="mono">github.com/heroiclabs/nakama</span> · Agones · <span class="mono">agones.dev</span>
+  </p>
+</section>
+
+</body>
+</html>
