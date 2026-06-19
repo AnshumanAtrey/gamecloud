@@ -162,3 +162,36 @@ Honest engineering trade-off: a full multi-region GameLift + RDS-Multi-AZ deploy
 and time. One free-tier box proves the hands-on cloud layer on real AWS; the rest is documented and
 costed as the production target — examiners respect "here's what runs + here's the design it scales
 into" over a bluff that breaks under one question.
+
+---
+
+## I. Infrastructure-as-Code, Linux deployment & scope
+
+**Q: Did you use Terraform / Infrastructure as Code?**
+Yes — **all** the AWS infrastructure is provisioned by Terraform (`infra/terraform/`). One `terraform
+apply` created **14 live resources**: the VPC (10.0.0.0/16), 4 subnets (2 public + 2 private across
+2 AZs), the internet gateway + route tables, both security groups, and the EC2 instance — reproducible
+and version-controlled. `terraform destroy` tears it all down. RDS Multi-AZ MySQL is in the same config
+behind an `enable_rds` flag. (Show `terraform state list` and `infra/terraform/main.tf`.)
+
+**Q: Walk me through deploying it on the EC2 box (Linux administration).**
+Amazon Linux 2023 `t3.micro`. I SSH in with a key pair; installed the stack (MariaDB server, Nginx,
+Node, Python 3.11) via `dnf`; created a dedicated `gamecloud` user/group with least-privilege directory
+permissions; and run the API and console as **systemd services** — `systemctl status gamecloud-backend
+gamecloud-frontend nginx mariadb` — so they auto-restart and survive reboots. **Nginx** reverse-proxies
+:80 → the console and `/api` → FastAPI (single origin). **Cron** runs `backup-db.sh` for nightly MySQL
+dumps. That's the Linux Administration + Cloud VM Deployment + Automation rubric items, live on AWS.
+
+**Q: Where's your Jenkins / Kubernetes / CI-CD pipeline? (know this — don't get rattled)**
+Those aren't part of this case study. **AWS Case Study 83 (GameCloud)** is cloud architecture, Linux,
+VM deployment, MySQL, Docker, VPC, monitoring, and automation — all done. **Jenkins, Kubernetes, ELK,
+and Vault belong to the *DevOps* case study (TerraMind / PS124)** — that's my separate DevOps viva,
+where they're built. For GameCloud, my IaC is **Terraform** and containerization is **Docker +
+docker-compose**. If you'd like, I can outline how I'd bolt on CI/CD — GitHub Actions or Jenkins that
+builds the images and runs `terraform apply` on a push — but it's outside this rubric.
+
+**Q: Is it containerized? Did you use Docker?**
+Yes — multi-stage Dockerfiles for the API (Python) and console (Next.js standalone) + a
+`docker-compose.yml` that brings up MySQL + backend + frontend with one command. Both images build
+clean. On the live box I run the services natively under systemd (lighter on a 1 GB t3.micro); in
+production they'd run as containers on ECS — same images.
