@@ -195,3 +195,43 @@ Yes — multi-stage Dockerfiles for the API (Python) and console (Next.js standa
 `docker-compose.yml` that brings up MySQL + backend + frontend with one command. Both images build
 clean. On the live box I run the services natively under systemd (lighter on a 1 GB t3.micro); in
 production they'd run as containers on ECS — same images.
+
+---
+
+## J. Networking fundamentals — IP addresses & subnetting (panelist asked this)
+
+**Q: What is an IP address, and what are its types?**
+An IP address identifies a device on a network. **IPv4** is a 32-bit number written as four octets,
+each 0–255 (e.g. `10.0.0.19`); **IPv6** is 128-bit. Types to know:
+- **IPv4 vs IPv6** — 32-bit vs 128-bit.
+- **Public vs Private** — public is routable on the internet; private is internal only. Private ranges
+  (memorize): **10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16**. My VPC uses **10.0.0.0/16** — a private
+  range, exactly as AWS expects.
+- **Static vs Dynamic** — fixed, vs assigned automatically by DHCP.
+- **Classes (older classful scheme):** A (1–126), B (128–191), C (192–223), D = multicast (224–239),
+  E = reserved (240–255). `127.x` is loopback (`127.0.0.1` = localhost).
+- **Special addresses in every subnet:** the **network address** (first, all host bits 0), the
+  **broadcast address** (last, all host bits 1), the **gateway** (usually the first usable, `.1`), and
+  the **usable host range** in between.
+
+**Q: How many subnets can you make from an IP / network?**
+It depends on the subnet mask — how many bits you borrow for the subnet part. Two formulas:
+- **Subnets** = 2^(bits borrowed) = 2^(new prefix − old prefix)
+- **Usable hosts per subnet** = 2^(32 − prefix) − 2  (subtract 2 for network + broadcast)
+
+**My project, concretely:** the VPC is **10.0.0.0/16** and I carve **/24** subnets.
+- Subnets: 2^(24 − 16) = 2^8 = **256** possible /24 subnets.
+- Hosts each: 2^(32 − 24) − 2 = 256 − 2 = **254** usable. On **AWS it is 251**, because AWS reserves
+  5 IPs per subnet (network, VPC router `.1`, DNS `.2`, future use `.3`, broadcast).
+- I used **4** of those 256: two public + two private, across two Availability Zones.
+
+**Quick way to remember (drill this):**
+- Powers of 2: **2, 4, 8, 16, 32, 64, 128, 256**.
+- **Subnets** = 2 ^ (the slash difference). /16 to /24 is a jump of 8 → 2^8 = **256**.
+- **Hosts** = (32 − the slash) as a power of 2, then − 2. /24 → 32−24=8 → 2^8=256 → −2 = **254**.
+- Addresses by prefix (each step up halves it): **/24=256, /25=128, /26=64, /27=32, /28=16, /29=8, /30=4**.
+- Private-range mnemonic: **"10 · 172.16 · 192.168"**.
+
+**One-line answer to give:** *"It depends on the mask. My VPC is 10.0.0.0/16; carving /24s gives 256
+subnets of 254 hosts each — 251 usable on AWS, which reserves 5 per subnet. I used 4: two public,
+two private, across two AZs."*
