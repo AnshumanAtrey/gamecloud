@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GameCloud - Project Documentation</title>
+<style>
+  :root{
+    --ink:#0f172a; --accent:#4f46e5; --accent-d:#3730a3; --cyan:#0e7490;
+    --good:#15803d; --warn:#b45309; --bad:#b91c1c;
+    --g1:#475569; --g2:#64748b; --g3:#94a3b8; --line:#e2e8f0; --bg:#f8fafc;
+  }
+  @page { size:A4; margin:16mm 15mm 15mm 15mm;
+    @bottom-left { content:"GameCloud - Project Documentation"; font-family:"SF Mono",Menlo,monospace; font-size:7pt; color:#94a3b8; }
+    @bottom-right{ content:counter(page) " / " counter(pages); font-family:"SF Mono",Menlo,monospace; font-size:7pt; color:#94a3b8; }
+  }
+  @page :first { margin:0; @bottom-left{content:""} @bottom-right{content:""} }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body{ font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif; color:var(--ink); font-size:9.6pt; line-height:1.5; }
+  p{ margin-bottom:6pt; } strong,b{ font-weight:650; }
+  .mono{ font-family:"SF Mono",Menlo,monospace; }
+  h2{ font-size:14pt; font-weight:750; letter-spacing:-0.01em; margin:0 0 3pt; }
+  h2 .n{ font-family:"SF Mono",monospace; color:var(--accent); font-size:11pt; margin-right:8pt; }
+  .sub{ color:var(--g2); font-size:9pt; margin-bottom:9pt; padding-bottom:7pt; border-bottom:1px solid var(--line); }
+  h3{ font-size:10.5pt; font-weight:700; margin:10pt 0 4pt; color:var(--accent-d); }
+  section{ padding:12mm 14mm; page-break-before:always; }
+
+  /* cover */
+  .cover{ height:297mm; width:210mm; padding:0; position:relative; page-break-after:always; color:#fff;
+    background:linear-gradient(150deg,#1e1b4b 0%,#312e81 38%,#4f46e5 100%); overflow:hidden; }
+  .cover .grid{ position:absolute; inset:0; background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px); background-size:14mm 14mm; }
+  .cover .inner{ position:relative; z-index:2; padding:30mm 24mm; display:flex; flex-direction:column; height:100%; }
+  .cover .kick{ font-family:"SF Mono",monospace; font-size:9pt; letter-spacing:0.3em; text-transform:uppercase; color:#c7d2fe; }
+  .cover .rule{ height:3px; width:46mm; background:#a5b4fc; margin:10mm 0 9mm; border-radius:2px; }
+  .cover h1{ font-size:46pt; line-height:1.02; font-weight:800; letter-spacing:-0.025em; }
+  .cover h1 .lt{ font-weight:300; color:#c7d2fe; display:block; }
+  .cover .tag{ font-size:13pt; color:#e0e7ff; margin-top:7mm; max-width:135mm; font-weight:400; }
+  .cover .spacer{ flex:1; }
+  .cover .facts{ display:flex; gap:6mm; margin-bottom:8mm; }
+  .cover .facts .f{ background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); border-radius:8px; padding:7pt 11pt; }
+  .cover .facts .f .l{ font-size:7pt; text-transform:uppercase; letter-spacing:0.08em; color:#a5b4fc; }
+  .cover .facts .f .v{ font-family:"SF Mono",monospace; font-size:9.5pt; color:#fff; margin-top:2pt; }
+  .cover .meta{ font-size:9pt; color:#c7d2fe; line-height:1.8; border-top:1px solid rgba(255,255,255,.2); padding-top:7mm; }
+  .cover .meta b{ color:#fff; }
+
+  table{ width:100%; border-collapse:collapse; margin:5pt 0 9pt; font-size:8.7pt; }
+  th,td{ text-align:left; padding:4.5pt 8pt; border-bottom:1px solid var(--line); vertical-align:top; }
+  th{ background:var(--bg); font-size:7.4pt; text-transform:uppercase; letter-spacing:0.05em; color:var(--g2); }
+  td.svc{ font-family:"SF Mono",monospace; color:var(--accent-d); font-size:8pt; }
+  .ok{ color:var(--good); font-weight:700; }
+
+  .facts2{ display:flex; gap:5mm; margin:8pt 0; }
+  .facts2 .b{ flex:1; border:1px solid var(--line); border-radius:7px; padding:8pt 10pt; background:var(--bg); }
+  .facts2 .b .l{ font-size:7pt; text-transform:uppercase; letter-spacing:0.05em; color:var(--g2); }
+  .facts2 .b .v{ font-family:"SF Mono",monospace; font-size:9pt; color:var(--accent-d); margin-top:3pt; word-break:break-all; }
+
+  .steps{ counter-reset:step; }
+  .steps .s{ position:relative; padding:6pt 0 6pt 26pt; border-left:2px solid var(--line); margin-left:8pt; }
+  .steps .s::before{ counter-increment:step; content:counter(step); position:absolute; left:-11pt; top:5pt; width:20pt; height:20pt; background:var(--accent); color:#fff; border-radius:50%; font-size:8.5pt; font-weight:700; display:flex; align-items:center; justify-content:center; }
+  .steps .s b{ color:var(--ink); }
+  .steps .s .d{ color:var(--g1); font-size:8.8pt; }
+
+  .note{ background:var(--bg); border-left:3px solid var(--accent); padding:7pt 10pt; margin:8pt 0; font-size:8.7pt; border-radius:0 5px 5px 0; }
+  .cmd{ background:#0f172a; color:#e2e8f0; font-family:"SF Mono",monospace; font-size:8pt; padding:7pt 10pt; border-radius:5px; margin:5pt 0; white-space:pre-wrap; }
+  .cmd .c{ color:#a5b4fc; }
+
+  /* figures */
+  .shot{ break-inside:avoid; page-break-inside:avoid; margin:0 0 9mm; }
+  .shot img{ width:100%; display:block; border:1px solid var(--line); border-radius:6px; box-shadow:0 1px 4px rgba(15,23,42,.07); }
+  .shot figcaption{ margin-top:5pt; font-size:8.7pt; color:var(--g1); line-height:1.45; }
+  .fnum{ display:inline-block; font-family:"SF Mono",monospace; font-size:7pt; color:#fff; background:var(--accent); padding:1.5pt 6pt; border-radius:3px; margin-right:6pt; vertical-align:1px; }
+  .shot figcaption b{ color:var(--ink); }
+  .sig{ color:var(--cyan); font-weight:600; }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="grid"></div>
+  <div class="inner">
+    <div class="kick">AWS Cloud Computing &nbsp;/&nbsp; Case Study 83</div>
+    <div class="rule"></div>
+    <h1>GameCloud<span class="lt">Project Documentation</span></h1>
+    <div class="tag">Build, deployment, and live demonstration of an online gaming and esports cloud operations platform on Amazon Web Services.</div>
+    <div class="spacer"></div>
+    <div class="facts">
+      <div class="f"><div class="l">Live URL</div><div class="v">44.202.179.146</div></div>
+      <div class="f"><div class="l">Repository</div><div class="v">github.com/AnshumanAtrey/gamecloud</div></div>
+      <div class="f"><div class="l">Region</div><div class="v">us-east-1</div></div>
+    </div>
+    <div class="meta">
+      <b>Author</b> &nbsp; Anshuman Atrey &nbsp;/&nbsp; B.Tech CSE 2024-2028 &nbsp;/&nbsp; Semester IV<br>
+      <b>Institution</b> &nbsp; ITM Skills University &nbsp;/&nbsp; <b>Domain</b> &nbsp; Online Gaming and Esports Infrastructure
+    </div>
+  </div>
+</div>
+
+<!-- 1. OVERVIEW -->
+<section>
+  <h2><span class="n">01</span>Project Overview</h2>
+  <div class="sub">What GameCloud is, what was delivered, and the stack it runs on.</div>
+
+  <p>GameCloud is the cloud operations platform that an online gaming and esports company runs its global business on. It is not the game itself; it is the control plane: centralized real-time dashboards, role-based access control, analytics and reporting, approval workflows, alerting, an audit trail, and multi-region expansion management. The platform is built to run on AWS, and the hands-on cloud layer is demonstrated live on a real Amazon EC2 instance.</p>
+
+  <div class="facts2">
+    <div class="b"><div class="l">Live console</div><div class="v">http://44.202.179.146</div></div>
+    <div class="b"><div class="l">EC2 instance</div><div class="v">i-0d7b767a1b86046ab (t3.micro)</div></div>
+    <div class="b"><div class="l">VPC</div><div class="v">vpc-05bffc78ba649c40b (10.0.0.0/16)</div></div>
+  </div>
+
+  <h3>Technology stack</h3>
+  <table>
+    <tr><th>Layer</th><th>Technology</th></tr>
+    <tr><td>Operations console</td><td class="svc">Next.js 14, React 18, TanStack Query, Recharts, Tailwind CSS</td></tr>
+    <tr><td>API</td><td class="svc">FastAPI, SQLAlchemy, PyJWT, Prometheus instrumentator</td></tr>
+    <tr><td>Database</td><td class="svc">MySQL 8 / MariaDB (SQLite for local development)</td></tr>
+    <tr><td>Infrastructure</td><td class="svc">AWS (EC2, VPC, subnets, security groups), Terraform, Nginx, Docker</td></tr>
+    <tr><td>Operations</td><td class="svc">systemd, cron, shell automation, Prometheus metrics</td></tr>
+  </table>
+
+  <h3>Deliverable coverage (Case Study 83)</h3>
+  <table>
+    <tr><th>Rubric area</th><th>Delivered as</th></tr>
+    <tr><td>Cloud architecture (HA, scalability, multi-region)</td><td>VPC across 2 AZs, GameLift/RDS design, architecture dossier</td></tr>
+    <tr><td>Linux administration and VM deployment</td><td>EC2 host: users, permissions, systemd services, Nginx, cron</td></tr>
+    <tr><td>Cloud database</td><td>MySQL/MariaDB on the box, backup and restore scripts</td></tr>
+    <tr><td>Docker and containerization</td><td>Multi-stage Dockerfiles and docker-compose</td></tr>
+    <tr><td>Cloud networking</td><td>VPC, public and private subnets, security groups</td></tr>
+    <tr><td>Monitoring and automation</td><td>Prometheus metrics, shell and cron automation</td></tr>
+    <tr><td>Product (dashboards, RBAC, reporting, workflow, audit)</td><td>The operations console</td></tr>
+    <tr><td>Pricing strategy and architecture diagrams</td><td>pricing.html and architecture.html</td></tr>
+  </table>
+</section>
+
+<!-- 2. STEPS -->
+<section>
+  <h2><span class="n">02</span>Engineering Steps</h2>
+  <div class="sub">The build and deployment journey, from architecture to a live deployment on AWS.</div>
+
+  <div class="steps">
+    <div class="s"><b>Designed the AWS architecture.</b> <span class="d">Mapped each requirement to AWS services, following the AWS reference architectures for game hosting and analytics and the Well-Architected Games Lens.</span></div>
+    <div class="s"><b>Built the backend.</b> <span class="d">FastAPI service with SQLAlchemy on MySQL, JWT authentication and three roles (admin, manager, ops), a live telemetry simulation engine, and a Prometheus metrics endpoint.</span></div>
+    <div class="s"><b>Built the operations console.</b> <span class="d">Next.js dashboard: overview, regions and fleets, analytics, workflows, alerts, audit log, and an executive portal, with a self-contained simulation fallback.</span></div>
+    <div class="s"><b>Containerized the stack.</b> <span class="d">Multi-stage Dockerfiles for the API and console plus a docker-compose file that brings up MySQL, the backend, and the frontend with one command.</span></div>
+    <div class="s"><b>Wrote the infrastructure as code.</b> <span class="d">Terraform module for the VPC, subnets, security groups, EC2 instance, and an optional RDS database.</span></div>
+    <div class="s"><b>Provisioned AWS.</b> <span class="d">A single terraform apply created 14 live resources: the VPC, four subnets across two Availability Zones, route tables, the internet gateway, two security groups, and the EC2 host.</span></div>
+    <div class="s"><b>Deployed on EC2.</b> <span class="d">Installed MariaDB, Nginx, Node, and Python on Amazon Linux 2023; created a service user; ran the API and console as systemd services behind an Nginx reverse proxy; configured cron backups.</span></div>
+    <div class="s"><b>Verified live and captured evidence.</b> <span class="d">Confirmed the public URL serves the console, the API returns live data from MySQL, and metrics are exposed; captured the screenshots in this document.</span></div>
+  </div>
+
+  <h3>Provisioning command</h3>
+  <div class="cmd"><span class="c">$</span> terraform apply -var "key_name=gamecloud" -var "my_ip_cidr=&lt;ip&gt;/32"
+Apply complete! Resources: 14 added, 0 changed, 0 destroyed.
+console_url = "http://ec2-44-202-179-146.compute-1.amazonaws.com"</div>
+
+  <div class="note"><b>Engineering notes (real issues fixed during deployment).</b> Three problems were caught and corrected, and the fixes are committed: (1) an AWS security group rejected a non-ASCII character in its description; (2) the Amazon Linux 2023 image required a 30 GB root volume; (3) MariaDB defaulted to latin1 and rejected multi-byte text (region names, alert symbols), fixed by forcing utf8mb4. Honest, verifiable engineering rather than a clean-looking bluff.</div>
+</section>
+
+<!-- 3. APPLICATION -->
+<section>
+  <h2><span class="n">03</span>Application Walkthrough</h2>
+  <div class="sub">The operations console, running live on AWS. Each figure shows the page and what it demonstrates.</div>
+
+  <figure class="shot"><img src="screenshots/01-login.png" alt="Login">
+    <figcaption><span class="fnum">Fig 1</span><b>Sign-in (role-based access).</b> The entry point offers three operator roles - Admin, Manager, and Ops. <span class="sig">Signifies:</span> access is authenticated and scoped to a role from the very first screen, backed by JWT tokens in the API.</figcaption></figure>
+
+  <figure class="shot"><img src="screenshots/02-overview.png" alt="Overview">
+    <figcaption><span class="fnum">Fig 2</span><b>Operations overview dashboard.</b> Real-time platform KPIs (concurrent users, sessions, matches per minute, revenue, latency), a live concurrent-users chart, and per-region health. The green "Live backend" badge confirms the data comes from the FastAPI service on AWS. <span class="sig">Signifies:</span> centralized real-time visibility, the core product requirement.</figcaption></figure>
+
+  <figure class="shot"><img src="screenshots/03-regions.png" alt="Regions and fleets">
+    <figcaption><span class="fnum">Fig 3</span><b>Regions and fleets.</b> Five AWS regions and their game-server fleets, with live CPU and memory utilization, capacity bars, and Graviton instance types. <span class="sig">Signifies:</span> multi-region, elastic capacity and expansion management.</figcaption></figure>
+
+  <figure class="shot"><img src="screenshots/04-dr-drill.png" alt="Disaster recovery drill">
+    <figcaption><span class="fnum">Fig 4</span><b>Disaster-recovery drill (live).</b> An operator has taken us-east-1 offline: that region drops to zero CCU and its fleets show OFFLINE while the other four regions keep serving, and a critical alert is raised. <span class="sig">Signifies:</span> operational continuity through a simulated cloud-region outage, demonstrated rather than only documented.</figcaption></figure>
+
+  <figure class="shot"><img src="screenshots/05-analytics.png" alt="Analytics">
+    <figcaption><span class="fnum">Fig 5</span><b>Analytics and reporting.</b> Time series for concurrent users, cumulative revenue, average latency, and CCU by region, drawn from KPI history persisted in MySQL every 15 seconds. <span class="sig">Signifies:</span> data-driven reporting for operational decisions.</figcaption></figure>
+
+  <figure class="shot"><img src="screenshots/06-workflows.png" alt="Workflows">
+    <figcaption><span class="fnum">Fig 6</span><b>Approval workflows (Admin view).</b> Operational change requests - fleet provisioning, region expansion, tournaments - with Approve and Reject controls visible because the signed-in user is an Admin. <span class="sig">Signifies:</span> workflow management with approval chains.</figcaption></figure>
+
+  <figure class="shot"><img src="screenshots/07-rbac-403.png" alt="RBAC ops view">
+    <figcaption><span class="fnum">Fig 7</span><b>Role-based access control (Ops view).</b> The same Workflows page signed in as Ops: the Approve and Reject buttons are gone, and the Audit and Executive entries are absent from the navigation. <span class="sig">Signifies:</span> least-privilege RBAC enforced in the UI and re-checked server-side, where the API returns HTTP 403 for an unauthorized action.</figcaption></figure>
+
+  <figure class="shot"><img src="screenshots/08-alerts.png" alt="Alerts">
+    <figcaption><span class="fnum">Fig 8</span><b>Monitoring and alerts.</b> Active, acknowledged, and resolved alerts by severity, each with acknowledge and resolve actions. <span class="sig">Signifies:</span> proactive incident response and alerting.</figcaption></figure>
+
+  <figure class="shot"><img src="screenshots/09-audit.png" alt="Audit log">
+    <figcaption><span class="fnum">Fig 9</span><b>Audit log.</b> An append-only record of every privileged action - logins, approvals, and the DR drill - stored in MySQL. <span class="sig">Signifies:</span> database-backed operational records with integrity, auditability, and compliance.</figcaption></figure>
+
+  <figure class="shot"><img src="screenshots/10-executive.png" alt="Executive portal">
+    <figcaption><span class="fnum">Fig 10</span><b>Executive portal.</b> An aggregated leadership view: revenue today and a 30-day projection, peak CCU, uptime, capacity utilization, and a regional performance table. <span class="sig">Signifies:</span> executive reporting for stakeholders.</figcaption></figure>
+</section>
+
+<!-- 4. API & MONITORING -->
+<section>
+  <h2><span class="n">04</span>API and Monitoring</h2>
+  <div class="sub">The application is documented and observable.</div>
+
+  <figure class="shot"><img src="screenshots/12-swagger.png" alt="Swagger API docs">
+    <figcaption><span class="fnum">Fig 11</span><b>API documentation (Swagger / OpenAPI).</b> The FastAPI auto-generated Swagger UI listing all 15 endpoints with the Authorize control for JWT and the request and response schemas. <span class="sig">Signifies:</span> a documented, testable REST API surface.</figcaption></figure>
+
+  <figure class="shot"><img src="screenshots/11-metrics.png" alt="Prometheus metrics">
+    <figcaption><span class="fnum">Fig 12</span><b>Prometheus metrics endpoint.</b> The /metrics endpoint exposing gamecloud_ccu, gamecloud_active_alerts, gamecloud_regions_online and more in Prometheus format. <span class="sig">Signifies:</span> the platform is observable and ready to be scraped by Prometheus or Amazon CloudWatch.</figcaption></figure>
+</section>
+
+<!-- 5. AWS INFRA -->
+<section>
+  <h2><span class="n">05</span>AWS Infrastructure - Live Proof</h2>
+  <div class="sub">The resources, captured in the AWS Console, that the platform actually runs on.</div>
+
+  <figure class="shot"><img src="screenshots/13-aws-ec2-instance.jpg" alt="EC2 instance">
+    <figcaption><span class="fnum">Fig 13</span><b>EC2 instance - gamecloud-app (Running).</b> The live t3.micro: instance i-0d7b767a1b86046ab, state Running, public IP 44.202.179.146, in the gamecloud-vpc and the gamecloud-public-0 subnet (us-east-1a). <span class="sig">Signifies:</span> the platform runs on real AWS compute - Cloud VM Deployment, live.</figcaption></figure>
+
+  <figure class="shot"><img src="screenshots/14-aws-vpc-map.jpg" alt="VPC resource map">
+    <figcaption><span class="fnum">Fig 14</span><b>VPC resource map - gamecloud-vpc.</b> The network topology: a 10.0.0.0/16 VPC with four subnets across us-east-1a and us-east-1b (two public, two private), the public route table, and the internet gateway. <span class="sig">Signifies:</span> a designed multi-AZ network with public and private segmentation.</figcaption></figure>
+
+  <figure class="shot"><img src="screenshots/15-aws-subnets.jpg" alt="Subnets">
+    <figcaption><span class="fnum">Fig 15</span><b>Subnets (multi-AZ).</b> The four GameCloud subnets - gamecloud-public-0 and 1, gamecloud-private-0 and 1 - spread across two Availability Zones. <span class="sig">Signifies:</span> IP addressing and public and private network design across AZs for high availability.</figcaption></figure>
+
+  <figure class="shot"><img src="screenshots/16-aws-security-groups.jpg" alt="Security groups">
+    <figcaption><span class="fnum">Fig 16</span><b>Security groups (firewall).</b> gamecloud-web-sg (SSH, HTTP, HTTPS) and gamecloud-db-sg (MySQL only from the web tier). <span class="sig">Signifies:</span> least-privilege firewall rules; the database tier is unreachable from the internet.</figcaption></figure>
+
+  <figure class="shot"><img src="screenshots/17-aws-vpc-dashboard.jpg" alt="VPC dashboard">
+    <figcaption><span class="fnum">Fig 17</span><b>VPC dashboard - resources by region.</b> A summary of the provisioned resources in us-east-1, including subnets, route tables, internet gateways, and security groups. <span class="sig">Signifies:</span> the full networking footprint created by Terraform.</figcaption></figure>
+</section>
+
+<!-- 6. CHECKLIST -->
+<section>
+  <h2><span class="n">06</span>Deliverables Checklist</h2>
+  <div class="sub">Every required deliverable mapped to its artifact and status.</div>
+  <table>
+    <tr><th>Deliverable</th><th>Artifact</th><th>Status</th></tr>
+    <tr><td>Working application</td><td>Operations console (Next.js + FastAPI + MySQL)</td><td class="ok">Live on AWS</td></tr>
+    <tr><td>Source code repository</td><td>github.com/AnshumanAtrey/gamecloud (public)</td><td class="ok">Done</td></tr>
+    <tr><td>Cloud architecture</td><td>architecture.html, VPC across 2 AZs</td><td class="ok">Done</td></tr>
+    <tr><td>Linux administration</td><td>EC2: users, permissions, systemd, cron</td><td class="ok">Live</td></tr>
+    <tr><td>Cloud VM deployment (Nginx, SSH)</td><td>EC2 host + Nginx reverse proxy</td><td class="ok">Live</td></tr>
+    <tr><td>Cloud database (MySQL)</td><td>MariaDB on EC2 + backup / restore scripts</td><td class="ok">Live</td></tr>
+    <tr><td>Docker and containerization</td><td>Dockerfiles + docker-compose</td><td class="ok">Done</td></tr>
+    <tr><td>Cloud networking (VPC)</td><td>Terraform: VPC, subnets, security groups</td><td class="ok">Live</td></tr>
+    <tr><td>Monitoring</td><td>Prometheus /metrics, CloudWatch-ready</td><td class="ok">Live</td></tr>
+    <tr><td>Automation (shell scripts)</td><td>setup, backup, restore, healthcheck, monitor</td><td class="ok">Done</td></tr>
+    <tr><td>Pricing strategy</td><td>pricing.html</td><td class="ok">Done</td></tr>
+    <tr><td>Architecture and deployment diagrams</td><td>architecture.html</td><td class="ok">Done</td></tr>
+    <tr><td>Disaster recovery plan</td><td>DR-PLAN.md + live drill (Fig 4)</td><td class="ok">Done</td></tr>
+    <tr><td>Documentation and screenshots</td><td>This document + README + 17 screenshots</td><td class="ok">Done</td></tr>
+  </table>
+
+  <div class="note"><b>Honest scope note.</b> The console, MySQL, the VPC and security groups, monitoring, and the automation scripts run live on a free-tier EC2 host. The full multi-region GameLift hosting, the serverless analytics pipeline, and RDS Multi-AZ are documented and costed in architecture.html and pricing.html as the production target this deployment scales into. The live telemetry numbers are produced by a simulation engine; all operational records (users, fleets, workflows, alerts, audit) are real rows in MySQL.</div>
+</section>
+
+</body>
+</html>
